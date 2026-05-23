@@ -11,7 +11,7 @@ import {
   resolvePluginTargets,
   copyArtifacts,
   deploy
-} from "../src/deploy.mjs";
+} from "../bin/obs-deploy.mjs";
 
 function writeJson(path, obj) {
   writeFileSync(path, JSON.stringify(obj, null, 2));

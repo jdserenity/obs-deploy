@@ -1,6 +1,6 @@
 # obs-deploy — Architecture
 
-CLI `obs-deploy` (Node ESM, no runtime dependencies). Entry: `bin/obs-deploy.mjs` → `src/deploy.mjs`.
+CLI `obs-deploy` (Node ESM, no runtime dependencies). Single file: `bin/obs-deploy.mjs` (core logic + CLI entry).
 
 ## Flow
 
@@ -17,9 +17,8 @@ CLI `obs-deploy` (Node ESM, no runtime dependencies). Entry: `bin/obs-deploy.mjs
 
 | Path | Role |
 |------|------|
-| `src/deploy.mjs` | Core logic (exported for tests) |
-| `bin/obs-deploy.mjs` | CLI flags: `--dry-run`, `--no-build`, `--cwd`, `--config` |
+| `bin/obs-deploy.mjs` | Single file: core logic (exported for tests) + CLI |
 | `config/deploy.json.example` | Machine config template |
 | `test/deploy.test.js` | `node --test` |
 
-Install: `npm link` exposes the `bin` script globally.
+Install: `scripts/install.sh` copies `bin/obs-deploy.mjs` to `~/.local/bin/obs-deploy`. Do not use `npm link`.

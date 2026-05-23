@@ -5,11 +5,13 @@ Build an Obsidian plugin repo and copy deploy artifacts into every configured va
 ## Install
 
 ```bash
-cd /path/to/obs-deploy
-npm link
+cd /path/to/obs-deploy   # your dev checkout
+bash scripts/install.sh  # copies bin/obs-deploy.mjs → ~/.local/bin/obs-deploy (re-run after changes)
 ```
 
-`obs-deploy` is then on your PATH. Requires Node 18+.
+Single file in `~/.local/bin`, same as `new-proj`. No symlinks, no `~/.local/lib`.
+
+Requires Node 18+ and `~/.local/bin` on your PATH.
 
 ## Config (once per machine)
 
