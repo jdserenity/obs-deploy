@@ -1,6 +1,8 @@
+import { spawnSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -91,4 +93,19 @@ test("deploy dry-run skips copy but resolves targets", () => {
   assert.equal(out.results.length, 1);
   assert.ok(out.results[0].copied[0].dryRun);
   assert.equal(existsSync(join(vault, ".obsidian", "plugins", "demo", "main.js")), false);
+});
+
+const CLI = join(dirname(fileURLToPath(import.meta.url)), "..", "bin", "obs-deploy.mjs");
+
+test("CLI blank line after styles.css not found", () => {
+  const pluginRoot = mkdtempSync(join(tmpdir(), "obs-deploy-"));
+  const vault = mkdtempSync(join(tmpdir(), "obs-vault-"));
+  const cfg = join(pluginRoot, "deploy.json");
+  mkdirSync(join(pluginRoot, "dist"), { recursive: true });
+  writeFileSync(join(pluginRoot, "dist", "main.js"), "x");
+  writeJson(join(pluginRoot, "manifest.json"), { id: "demo" });
+  writeJson(cfg, { vaults: [vault] });
+  const r = spawnSync(process.execPath, [CLI, "--no-build", "--cwd", pluginRoot, "--config", cfg], { encoding: "utf8" });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /styles\.css not found\n\n→/);
 });

@@ -130,7 +130,7 @@ Artifacts: dist/main.js → main.js, manifest.json; styles.css if present`);
 
   try {
     const out = deploy({ cwd, configPath, dryRun, skipBuild });
-    if (!out.stylesPresent) console.log("styles.css not found");
+    if (!out.stylesPresent) { console.log("styles.css not found"); console.log(); }
     for (const { target, copied } of out.results) {
       console.log(dryRun ? `[dry-run] → ${target}` : `→ ${target}`);
       for (const c of copied) {
