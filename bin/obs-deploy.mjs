@@ -54,7 +54,7 @@ export function runBuild(pluginRoot, npmCmd = "npm") {
 
 const ARTIFACTS = {
   main: { src: "dist/main.js", dest: "main.js", required: true },
-  styles: { src: "styles.css", dest: "styles.css", required: true },
+  styles: { src: "styles.css", dest: "styles.css", required: false },
   manifest: { src: "manifest.json", dest: "manifest.json", required: true }
 };
 
@@ -90,12 +90,13 @@ export function deploy({
   const id = pluginDirName(manifest, local);
   const targets = resolvePluginTargets(global.vaults, id);
   if (!skipBuild && !local.skipBuild) runBuild(pluginRoot, npmCmd);
+  const stylesPresent = existsSync(join(pluginRoot, "styles.css"));
   const results = [];
   for (const target of targets) {
     const copied = copyArtifacts(pluginRoot, target, { dryRun });
     results.push({ target, copied });
   }
-  return { pluginRoot, pluginId: id, targets, results };
+  return { pluginRoot, pluginId: id, targets, results, stylesPresent };
 }
 
 if (realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url))) {
@@ -120,7 +121,7 @@ Build (npm run build) and copy plugin artifacts into each vault:
 Global config: ${DEFAULT_CONFIG_PATH}  (override with OBS_DEPLOY_CONFIG or --config)
 Per-repo override: .obs-deploy.json  (optional pluginDir, skipBuild)
 
-Artifacts: dist/main.js → main.js, styles.css, manifest.json`);
+Artifacts: dist/main.js → main.js, manifest.json; styles.css if present`);
       process.exit(0);
     }
     console.error(`Unknown option: ${a}`);
@@ -129,6 +130,7 @@ Artifacts: dist/main.js → main.js, styles.css, manifest.json`);
 
   try {
     const out = deploy({ cwd, configPath, dryRun, skipBuild });
+    if (!out.stylesPresent) console.log("styles.css not found");
     for (const { target, copied } of out.results) {
       console.log(dryRun ? `[dry-run] → ${target}` : `→ ${target}`);
       for (const c of copied) {

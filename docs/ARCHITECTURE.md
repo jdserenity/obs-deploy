@@ -10,8 +10,8 @@ CLI `obs-deploy` (Node ESM, no runtime dependencies). Single file: `bin/obs-depl
 4. Unless `--no-build` or local `skipBuild`: `npm run build` in plugin root.
 5. For each vault: `mkdir -p <vault>/.obsidian/plugins/<id>/` and copy:
    - `dist/main.js` → `main.js`
-   - `styles.css`
    - `manifest.json`
+   - `styles.css` if present (otherwise logs `styles.css not found` and continues)
 
 ## Layout
 

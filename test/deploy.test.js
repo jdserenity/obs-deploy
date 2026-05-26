@@ -52,7 +52,20 @@ test("resolvePluginTargets builds .obsidian/plugins paths", () => {
   ]);
 });
 
-test("copyArtifacts copies main, styles, manifest", () => {
+test("copyArtifacts copies main and manifest without styles.css", () => {
+  const pluginRoot = mkdtempSync(join(tmpdir(), "obs-deploy-"));
+  const vault = mkdtempSync(join(tmpdir(), "obs-vault-"));
+  const target = join(vault, ".obsidian", "plugins", "demo");
+  mkdirSync(join(pluginRoot, "dist"), { recursive: true });
+  writeFileSync(join(pluginRoot, "dist", "main.js"), "bundle");
+  writeJson(join(pluginRoot, "manifest.json"), { id: "demo" });
+  copyArtifacts(pluginRoot, target);
+  assert.equal(readFileSync(join(target, "main.js"), "utf8"), "bundle");
+  assert.equal(existsSync(join(target, "styles.css")), false);
+  assert.ok(existsSync(join(target, "manifest.json")));
+});
+
+test("copyArtifacts copies styles.css when present", () => {
   const pluginRoot = mkdtempSync(join(tmpdir(), "obs-deploy-"));
   const vault = mkdtempSync(join(tmpdir(), "obs-vault-"));
   const target = join(vault, ".obsidian", "plugins", "demo");
@@ -61,9 +74,7 @@ test("copyArtifacts copies main, styles, manifest", () => {
   writeFileSync(join(pluginRoot, "styles.css"), "css");
   writeJson(join(pluginRoot, "manifest.json"), { id: "demo" });
   copyArtifacts(pluginRoot, target);
-  assert.equal(readFileSync(join(target, "main.js"), "utf8"), "bundle");
   assert.equal(readFileSync(join(target, "styles.css"), "utf8"), "css");
-  assert.ok(existsSync(join(target, "manifest.json")));
 });
 
 test("deploy dry-run skips copy but resolves targets", () => {
@@ -72,11 +83,11 @@ test("deploy dry-run skips copy but resolves targets", () => {
   const cfg = join(pluginRoot, "deploy.json");
   mkdirSync(join(pluginRoot, "dist"), { recursive: true });
   writeFileSync(join(pluginRoot, "dist", "main.js"), "x");
-  writeFileSync(join(pluginRoot, "styles.css"), "");
   writeJson(join(pluginRoot, "manifest.json"), { id: "demo" });
   writeJson(cfg, { vaults: [vault] });
   const out = deploy({ cwd: pluginRoot, configPath: cfg, dryRun: true, skipBuild: true });
   assert.equal(out.pluginId, "demo");
+  assert.equal(out.stylesPresent, false);
   assert.equal(out.results.length, 1);
   assert.ok(out.results[0].copied[0].dryRun);
   assert.equal(existsSync(join(vault, ".obsidian", "plugins", "demo", "main.js")), false);
